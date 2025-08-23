@@ -1,0 +1,3542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Productivity Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Styles - Black & White Theme */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(20,20,20,0.95) 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            color: #000000;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        .sidebar-nav {
+            padding: 15px 0;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            margin: 2px 0;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-left-color: #ffffff;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+            border-left-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            margin-right: 12px;
+            width: 20px;
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            color: #000000;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.shifted {
+            margin-left: 280px;
+        }
+
+        .content-area {
+            display: none;
+            padding: 80px 20px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .content-area.active {
+            display: block;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* Task List Styles */
+        .container {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            padding: 30px;
+            text-align: center;
+            color: #000000;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #000000 0%, #333333 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .tasks-content {
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            color: #000000;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .add-task-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .task-input, .form-input, .form-textarea, .chat-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+        }
+
+        .task-input:focus, .form-input:focus, .form-textarea:focus, .chat-input:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .task-input::placeholder, .form-input::placeholder, .form-textarea::placeholder, .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .category-select {
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .add-btn, .primary-btn, .send-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            color: #000000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover, .primary-btn:hover, .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+        }
+
+        .tasks-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            border-left: 4px solid #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-direction: column;
+        }
+
+        .task-main {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            border-left-color: #cccccc;
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .task-checkbox.checked {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #000000;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            color: #ffffff;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .task-category {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .edit-btn {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .delete-btn {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .add-subtask-btn {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Sub-tasks */
+        .subtasks {
+            margin-top: 15px;
+            padding-left: 20px;
+            width: 100%;
+        }
+
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .subtask-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .subtask-checkbox.checked {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #000000;
+        }
+
+        .subtask-text {
+            flex: 1;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .subtask-text.completed {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .add-subtask-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+        .subtask-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+
+        .subtask-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .subtask-add-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .subtask-add-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        .clear-completed {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: auto;
+            transition: all 0.3s ease;
+        }
+
+        .clear-completed:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+        }
+
+        .content-card h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Clock Styles */
+        .clock-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .clock-widget {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+
+        .digital-clock {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .clock-label {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .clock-btn {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clock-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .clock-btn.active {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* Recipe Styles */
+        .recipe-grid, .quotes-grid, .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .recipe-card, .quote-card, .contact-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .recipe-card:hover, .quote-card:hover, .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .recipe-title, .contact-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .recipe-meta, .contact-info {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+        }
+
+        .ingredients, .instructions {
+            margin-top: 15px;
+        }
+
+        .ingredients h4, .instructions h4 {
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .ingredients ul, .instructions ol {
+            margin-left: 20px;
+            line-height: 1.6;
+        }
+
+        .quote-text {
+            font-size: 1.1rem;
+            font-style: italic;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .quote-author {
+            text-align: right;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Chat Styles */
+        .chat-container {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            color: #000000;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+        }
+
+        /* Scrollbar styling */
+        .tasks-container::-webkit-scrollbar,
+        .chat-messages::-webkit-scrollbar,
+        .sidebar-nav::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .tasks-container::-webkit-scrollbar-track,
+        .chat-messages::-webkit-scrollbar-track,
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .tasks-container::-webkit-scrollbar-thumb,
+        .chat-messages::-webkit-scrollbar-thumb,
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .tasks-container::-webkit-scrollbar-thumb:hover,
+        .chat-messages::-webkit-scrollbar-thumb:hover,
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Crypto Styles */
+        .crypto-grid, .prompts-grid, .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .crypto-card, .prompt-card, .project-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .crypto-card:hover, .prompt-card:hover, .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .crypto-name, .prompt-title, .project-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .crypto-symbol {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .crypto-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .crypto-change {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .crypto-change.positive {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .crypto-change.negative {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .prompt-text, .project-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .prompt-actions, .project-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .copy-btn {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .copy-btn:hover {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .edit-btn {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .edit-btn:hover {
+            background: rgba(255, 193, 7, 0.3);
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .project-status, .project-priority {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .project-status.planning {
+            background: rgba(156, 39, 176, 0.2);
+            color: #9c27b0;
+        }
+
+        .project-status.in-progress {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+
+        .project-status.on-hold {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+
+        .project-status.completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .project-status.cancelled {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .project-priority.low {
+            background: rgba(158, 158, 158, 0.2);
+            color: #9e9e9e;
+        }
+
+        .project-priority.medium {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .project-priority.high {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+
+        .project-priority.critical {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .project-progress {
+            margin: 15px 0;
+        }
+
+        .project-progress-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+
+        .project-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .project-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #8bc34a 100%);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .project-due-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 10px;
+        }
+
+        .project-due-date.overdue {
+            color: #f44336;
+        }
+
+        .project-due-date.due-soon {
+            color: #ff9800;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+            z-index: 1002;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            box-shadow: 0 4px 20px rgba(244, 67, 54, 0.3);
+        }
+
+        /* Text Selection Tooltip */
+        .selection-tooltip {
+            position: absolute;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            color: #000000;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .selection-tooltip:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .selection-tooltip::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #ffffff;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            color: #000000;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 10001;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        /* Note Card Styles */
+        .note-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            margin-bottom: 15px;
+        }
+
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .note-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .note-meta {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 12px;
+        }
+
+        .note-content {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        /* Chat Styles */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message.loading-message {
+            opacity: 0.7;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0.3; }
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 20px;
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 12px 20px;
+            color: #ffffff;
+            font-size: 14px;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+
+            .main-content.shifted {
+                margin-left: 0;
+            }
+
+            .content-area {
+                padding: 70px 15px 20px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .stats {
+                gap: 20px;
+            }
+
+            .add-task-form {
+                flex-direction: column;
+            }
+
+            .task-input {
+                min-width: auto;
+            }
+
+            .clock-container,
+            .recipe-grid,
+            .quotes-grid,
+            .contacts-grid,
+            .crypto-grid,
+            .prompts-grid,
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-meta {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Toggle Button -->
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>⚡ Ultimate Suite</h2>
+                <div class="sidebar-subtitle">Complete Productivity Workspace</div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-page="tasks">
+                    <span class="nav-icon">✅</span>
+                    <span>Tasks</span>
+                </div>
+                <div class="nav-item" data-page="notes">
+                    <span class="nav-icon">📝</span>
+                    <span>Notes</span>
+                </div>
+                <div class="nav-item" data-page="bookmarks">
+                    <span class="nav-icon">🔖</span>
+                    <span>Bookmarks</span>
+                </div>
+                <div class="nav-item" data-page="documents">
+                    <span class="nav-icon">📄</span>
+                    <span>Documents</span>
+                </div>
+                <div class="nav-item" data-page="clock">
+                    <span class="nav-icon">🕐</span>
+                    <span>Clock & Timer</span>
+                </div>
+                <div class="nav-item" data-page="recipes">
+                    <span class="nav-icon">🍳</span>
+                    <span>Recipes</span>
+                </div>
+                <div class="nav-item" data-page="quotes">
+                    <span class="nav-icon">💬</span>
+                    <span>Quotes</span>
+                </div>
+                <div class="nav-item" data-page="contacts">
+                    <span class="nav-icon">👥</span>
+                    <span>Contacts</span>
+                </div>
+                <div class="nav-item" data-page="crypto">
+                    <span class="nav-icon">💰</span>
+                    <span>Crypto Prices</span>
+                </div>
+                <div class="nav-item" data-page="ai-prompts">
+                    <span class="nav-icon">🤖</span>
+                    <span>AI Prompts</span>
+                </div>
+                <div class="nav-item" data-page="projects">
+                    <span class="nav-icon">🚀</span>
+                    <span>Projects</span>
+                </div>
+                <div class="nav-item" data-page="claude-chat">
+                    <span class="nav-icon">🧠</span>
+                    <span>Claude AI</span>
+                </div>
+                <div class="nav-item" data-page="gemini-chat">
+                    <span class="nav-icon">✨</span>
+                    <span>Gemini AI</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            
+            <!-- Tasks Page -->
+            <div class="content-area active" id="tasks-page">
+                <div class="container">
+                    <div class="header">
+                        <h1>✅ Ultimate Task Manager</h1>
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="stat-number" id="totalTasks">0</span>
+                                <span class="stat-label">Total Tasks</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="completedTasks">0</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="remainingTasks">0</span>
+                                <span class="stat-label">Remaining</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <div class="tasks-content">
+                        <div class="category-tabs" id="categoryTabs">
+                            <button class="tab active" data-category="all">All Tasks</button>
+                        </div>
+
+                        <div class="add-task-form">
+                            <input type="text" class="task-input" id="taskInput" placeholder="What needs to be done?">
+                            <select class="category-select" id="categorySelect">
+                                <option value="personal">Personal</option>
+                                <option value="work">Work</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="health">Health</option>
+                                <option value="learning">Learning</option>
+                                <option value="generated">AI Generated</option>
+                            </select>
+                            <button class="add-btn" id="addBtn">Add Task</button>
+                        </div>
+
+                        <div class="filter-controls">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="pending">Pending</button>
+                            <button class="filter-btn" data-filter="completed">Completed</button>
+                            <button class="clear-completed" id="clearCompleted">Clear Completed</button>
+                        </div>
+
+                        <div class="tasks-container" id="tasksContainer">
+                            <div class="empty-state" id="emptyState">
+                                <div style="font-size: 4rem; margin-bottom: 20px;">📝</div>
+                                <h3>No tasks yet!</h3>
+                                <p>Add your first task above to get started.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clock & Timer Page -->
+            <div class="content-area" id="clock-page">
+                <div class="page-header">
+                    <h1>🕐 Clock & Timer Hub</h1>
+                    <p>World clocks, timers, and stopwatch</p>
+                </div>
+                
+                <div class="clock-container">
+                    <div class="clock-widget">
+                        <div class="clock-label">Current Time</div>
+                        <div class="digital-clock" id="currentTime">00:00:00</div>
+                        <div id="currentDate"></div>
+                    </div>
+
+                    <div class="clock-widget">
+                        <div class="clock-label">Melbourne Time</div>
+                        <div class="digital-clock" id="melbourneTime">00:00:00</div>
+                        <div id="melbourneDate"></div>
+                    </div>
+
+                    <div class="clock-widget">
+                        <div class="clock-label">Timer</div>
+                        <div class="digital-clock" id="timerDisplay">00:00:00</div>
+                        <div class="timer-controls">
+                            <input type="number" id="timerMinutes" placeholder="Minutes" min="0" max="999" style="width: 80px; padding: 8px; margin: 5px; border-radius: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                            <button class="clock-btn" id="startTimer">Start</button>
+                            <button class="clock-btn" id="pauseTimer">Pause</button>
+                            <button class="clock-btn" id="resetTimer">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="clock-widget">
+                        <div class="clock-label">Stopwatch</div>
+                        <div class="digital-clock" id="stopwatchDisplay">00:00:00</div>
+                        <div class="timer-controls">
+                            <button class="clock-btn" id="startStopwatch">Start</button>
+                            <button class="clock-btn" id="pauseStopwatch">Pause</button>
+                            <button class="clock-btn" id="resetStopwatch">Reset</button>
+                            <button class="clock-btn" id="lapStopwatch">Lap</button>
+                        </div>
+                        <div id="lapTimes"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipes Page -->
+            <div class="content-area" id="recipes-page">
+                <div class="page-header">
+                    <h1>🍳 Recipe Collection</h1>
+                    <p>Your personal cookbook</p>
+                </div>
+                
+                <div class="content-card">
+                    <h2>Add New Recipe</h2>
+                    <div class="form-group">
+                        <label class="form-label">Recipe Name</label>
+                        <input type="text" class="form-input" id="recipeName" placeholder="Enter recipe name...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cuisine Type</label>
+                        <select class="form-input" id="cuisineType">
+                            <option value="italian">Italian</option>
+                            <option value="asian">Asian</option>
+                            <option value="mexican">Mexican</option>
+                            <option value="american">American</option>
+                            <option value="mediterranean">Mediterranean</option>
+                            <option value="indian">Indian</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cooking Time (minutes)</label>
+                        <input type="number" class="form-input" id="cookingTime" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Servings</label>
+                        <input type="number" class="form-input" id="servings" placeholder="4">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ingredients (one per line)</label>
+                        <textarea class="form-textarea" id="recipeIngredients" placeholder="1 cup flour
+2 eggs
+1/2 cup milk" rows="6"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Instructions (one step per line)</label>
+                        <textarea class="form-textarea" id="recipeInstructions" placeholder="Preheat oven to 350°F
+Mix dry ingredients
+Add wet ingredients" rows="6"></textarea>
+                    </div>
+                    <button class="primary-btn" id="addRecipe">Add Recipe</button>
+                </div>
+
+                <div class="content-card">
+                    <h2>Your Recipes</h2>
+                    <div class="recipe-grid" id="recipeGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">🍽️</div>
+                            <h3>No recipes yet!</h3>
+                            <p>Add your first recipe above.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quotes Page -->
+            <div class="content-area" id="quotes-page">
+                <div class="page-header">
+                    <h1>💬 Inspirational Quotes</h1>
+                    <p>Wisdom and motivation for every day</p>
+                </div>
+                
+                <div class="content-card">
+                    <h2>Add New Quote</h2>
+                    <div class="form-group">
+                        <label class="form-label">Quote Text</label>
+                        <textarea class="form-textarea" id="quoteText" placeholder="Enter the quote here..." rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Author</label>
+                        <input type="text" class="form-input" id="quoteAuthor" placeholder="Quote author">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-input" id="quoteCategory">
+                            <option value="motivation">Motivation</option>
+                            <option value="wisdom">Wisdom</option>
+                            <option value="success">Success</option>
+                            <option value="life">Life</option>
+                            <option value="happiness">Happiness</option>
+                            <option value="love">Love</option>
+                            <option value="inspirational">Inspirational</option>
+                            <option value="funny">Funny</option>
+                        </select>
+                    </div>
+                    <button class="primary-btn" id="addQuote">Add Quote</button>
+                </div>
+
+                <div class="content-card">
+                    <h2>Quote Collection</h2>
+                    <div class="quotes-grid" id="quotesGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">💭</div>
+                            <h3>No quotes yet!</h3>
+                            <p>Add your first inspirational quote above.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contacts Page -->
+            <div class="content-area" id="contacts-page">
+                <div class="page-header">
+                    <h1>👥 Contact Manager</h1>
+                    <p>Keep track of important people</p>
+                </div>
+                
+                <div class="content-card">
+                    <h2>Add New Contact</h2>
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="contactName" placeholder="Enter full name...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="contactEmail" placeholder="email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" id="contactPhone" placeholder="+1 (555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Company/Organization</label>
+                        <input type="text" class="form-input" id="contactCompany" placeholder="Company name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-input" id="contactCategory">
+                            <option value="personal">Personal</option>
+                            <option value="work">Work</option>
+                            <option value="family">Family</option>
+                            <option value="friends">Friends</option>
+                            <option value="business">Business</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-textarea" id="contactNotes" placeholder="Additional notes about this contact..." rows="3"></textarea>
+                    </div>
+                    <button class="primary-btn" id="addContact">Add Contact</button>
+                </div>
+
+                <div class="content-card">
+                    <h2>Your Contacts</h2>
+                    <div class="contacts-grid" id="contactsGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">📇</div>
+                            <h3>No contacts yet!</h3>
+                            <p>Add your first contact above.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Page -->
+            <div class="content-area" id="notes-page">
+                <div class="page-header">
+                    <h1>📝 Notes</h1>
+                    <p>Your digital notepad</p>
+                </div>
+                
+                <div class="content-card">
+                    <h2>Add New Note</h2>
+                    <div class="form-group">
+                        <label class="form-label">Note Title</label>
+                        <input type="text" class="form-input" id="noteTitle" placeholder="Enter note title...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-input" id="noteCategory">
+                            <option value="personal">Personal</option>
+                            <option value="work">Work</option>
+                            <option value="ideas">Ideas</option>
+                            <option value="research">Research</option>
+                            <option value="highlights">Chat Highlights</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Note Content</label>
+                        <textarea class="form-textarea" id="noteContent" placeholder="Write your notes here..." rows="6"></textarea>
+                    </div>
+                    <button class="primary-btn" id="addNote">Save Note</button>
+                </div>
+
+                <div class="content-card">
+                    <h2>Your Notes</h2>
+                    <div class="filter-controls">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="personal">Personal</button>
+                        <button class="filter-btn" data-filter="work">Work</button>
+                        <button class="filter-btn" data-filter="ideas">Ideas</button>
+                        <button class="filter-btn" data-filter="research">Research</button>
+                        <button class="filter-btn" data-filter="highlights">Highlights</button>
+                        <button class="filter-btn" data-filter="other">Other</button>
+                    </div>
+                    <div class="recipe-grid" id="notesGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">📝</div>
+                            <h3>No notes yet!</h3>
+                            <p>Add your first note above or highlight text from chat messages.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookmarks Page -->
+            <div class="content-area" id="bookmarks-page">
+                <div class="page-header">
+                    <h1>🔖 Bookmarks</h1>
+                    <p>Save your favorite links</p>
+                </div>
+                <div class="content-card">
+                    <h2>Add Bookmark</h2>
+                    <div class="form-group">
+                        <input type="text" class="form-input" placeholder="Bookmark title">
+                    </div>
+                    <div class="form-group">
+                        <input type="url" class="form-input" placeholder="https://example.com">
+                    </div>
+                    <button class="primary-btn" onclick="alert('Bookmarks feature coming soon!')">Add Bookmark</button>
+                </div>
+            </div>
+
+            <!-- Documents Page -->
+            <div class="content-area" id="documents-page">
+                <div class="page-header">
+                    <h1>📄 Documents</h1>
+                    <p>Manage your documents</p>
+                </div>
+                <div class="content-card">
+                    <h2>Document Manager</h2>
+                    <p>Document management features coming soon!</p>
+                </div>
+            </div>
+
+            <!-- Crypto Page -->
+            <div class="content-area" id="crypto-page">
+                <div class="page-header">
+                    <h1>💰 Crypto Prices</h1>
+                    <p>Real-time cryptocurrency price tracking</p>
+                </div>
+                
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Popular Cryptocurrencies</h2>
+                        <button class="primary-btn" id="refreshCrypto">🔄 Refresh Prices</button>
+                    </div>
+                    <div id="cryptoLoading" class="empty-state" style="display: none;">
+                        <div class="loading"></div>
+                        <p>Loading crypto prices...</p>
+                    </div>
+                    <div class="crypto-grid" id="cryptoGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">₿</div>
+                            <h3>Loading crypto prices...</h3>
+                            <p>Click refresh to load latest prices.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Prompts Page -->
+            <div class="content-area" id="ai-prompts-page">
+                <div class="page-header">
+                    <h1>🤖 AI Prompts</h1>
+                    <p>Your personal AI prompt library</p>
+                </div>
+                
+                <div class="content-card">
+                    <h2>Add New AI Prompt</h2>
+                    <div class="form-group">
+                        <label class="form-label">Prompt Title</label>
+                        <input type="text" class="form-input" id="promptTitle" placeholder="Enter prompt title...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-input" id="promptCategory">
+                            <option value="writing">Writing</option>
+                            <option value="coding">Coding</option>
+                            <option value="creative">Creative</option>
+                            <option value="analysis">Analysis</option>
+                            <option value="business">Business</option>
+                            <option value="research">Research</option>
+                            <option value="education">Education</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prompt Text</label>
+                        <textarea class="form-textarea" id="promptText" placeholder="Enter your AI prompt here..." rows="6"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description (Optional)</label>
+                        <textarea class="form-textarea" id="promptDescription" placeholder="Describe what this prompt does..." rows="3"></textarea>
+                    </div>
+                    <button class="primary-btn" id="addPrompt">Add Prompt</button>
+                </div>
+
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Prompt Library</h2>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" class="form-input" id="promptSearch" placeholder="Search prompts..." style="width: 200px;">
+                            <select class="form-input" id="promptFilter" style="width: 120px;">
+                                <option value="all">All Categories</option>
+                                <option value="writing">Writing</option>
+                                <option value="coding">Coding</option>
+                                <option value="creative">Creative</option>
+                                <option value="analysis">Analysis</option>
+                                <option value="business">Business</option>
+                                <option value="research">Research</option>
+                                <option value="education">Education</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="prompts-grid" id="promptsGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">🤖</div>
+                            <h3>No prompts yet!</h3>
+                            <p>Add your first AI prompt above.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Page -->
+            <div class="content-area" id="projects-page">
+                <div class="page-header">
+                    <h1>🚀 Projects</h1>
+                    <p>Manage and track your projects</p>
+                </div>
+                
+                <div class="content-card">
+                    <h2>Add New Project</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Project Name</label>
+                            <input type="text" class="form-input" id="projectName" placeholder="Enter project name...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-input" id="projectCategory">
+                                <option value="web-dev">Web Development</option>
+                                <option value="mobile-app">Mobile App</option>
+                                <option value="design">Design</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="business">Business</option>
+                                <option value="personal">Personal</option>
+                                <option value="research">Research</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-input" id="projectStatus">
+                                <option value="planning">Planning</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="on-hold">On Hold</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select class="form-input" id="projectPriority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Due Date</label>
+                            <input type="date" class="form-input" id="projectDueDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Progress (%)</label>
+                            <input type="range" class="form-input" id="projectProgress" min="0" max="100" value="0" style="margin-top: 10px;">
+                            <div id="progressValue" style="text-align: center; margin-top: 5px; color: #ffffff;">0%</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="projectDescription" placeholder="Describe your project..." rows="4"></textarea>
+                    </div>
+                    <button class="primary-btn" id="addProject">Add Project</button>
+                </div>
+
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Your Projects</h2>
+                        <div style="display: flex; gap: 10px;">
+                            <select class="form-input" id="projectStatusFilter" style="width: 140px;">
+                                <option value="all">All Status</option>
+                                <option value="planning">Planning</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="on-hold">On Hold</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <select class="form-input" id="projectPriorityFilter" style="width: 120px;">
+                                <option value="all">All Priority</option>
+                                <option value="critical">Critical</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="projects-grid" id="projectsGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">📋</div>
+                            <h3>No projects yet!</h3>
+                            <p>Add your first project above.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Claude Chat Page -->
+            <div class="content-area" id="claude-chat-page">
+                <div class="page-header">
+                    <h1>🧠 Claude AI</h1>
+                    <p>Chat with Claude AI (Simulated Responses)</p>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-messages" id="claudeChatMessages">
+                        <div class="message assistant">
+                            <p>Hello! I'm Claude. How can I help you today? (This is a simulated chat for demo purposes)</p>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <textarea class="chat-input" id="claudeChatInput" placeholder="Type your message..." rows="1"></textarea>
+                        <button class="send-btn" id="claudeSendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gemini Chat Page -->
+            <div class="content-area" id="gemini-chat-page">
+                <div class="page-header">
+                    <h1>✨ Gemini AI</h1>
+                    <p>Chat with Google Gemini AI</p>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-messages" id="geminiChatMessages">
+                        <div class="message assistant">
+                            <p>Hello! I'm Gemini. How can I assist you today?</p>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <textarea class="chat-input" id="geminiChatInput" placeholder="Type your message..." rows="1"></textarea>
+                        <button class="send-btn" id="geminiSendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        class UltimateProductivitySuite {
+            constructor() {
+                this.currentPage = 'tasks';
+                this.tasks = this.loadData('tasks', []);
+                this.notes = this.loadData('notes', []);
+                this.bookmarks = this.loadData('bookmarks', []);
+                this.recipes = this.loadData('recipes', []);
+                this.quotes = this.loadData('quotes', []);
+                this.contacts = this.loadData('contacts', []);
+                this.cryptoPrices = [];
+                this.prompts = this.loadData('prompts', []);
+                this.projects = this.loadData('projects', []);
+                
+                // Task-related properties
+                this.currentCategory = 'all';
+                this.currentFilter = 'all';
+                this.editingTask = null;
+                this.showingSubtasks = {};
+                
+                // Clock properties
+                this.timer = null;
+                this.stopwatch = null;
+                this.timerTime = 0;
+                this.stopwatchTime = 0;
+                this.timerRunning = false;
+                this.stopwatchRunning = false;
+                this.lapTimes = [];
+                
+                // Crypto properties
+                this.cryptoRefreshInterval = null;
+                this.lastCryptoUpdate = 0;
+                
+                // Prompts properties
+                this.currentPromptFilter = 'all';
+                this.editingPrompt = null;
+                
+                // Projects properties
+                this.currentProjectStatusFilter = 'all';
+                this.currentProjectPriorityFilter = 'all';
+                this.editingProject = null;
+                
+                this.initializeApp();
+            }
+
+            initializeApp() {
+                this.initializeSidebar();
+                this.initializeTasks();
+                this.initializeClock();
+                this.initializeRecipes();
+                this.initializeQuotes();
+                this.initializeContacts();
+                this.initializeCrypto();
+                this.initializePrompts();
+                this.initializeProjects();
+                this.initializeNotes();
+                this.initializeChats();
+                this.initializeTextSelection();
+                this.renderCurrentPage();
+            }
+
+            initializeSidebar() {
+                const toggle = document.getElementById('sidebarToggle');
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const navItems = document.querySelectorAll('.nav-item');
+
+                toggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    mainContent.classList.toggle('shifted');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 768 && 
+                        !sidebar.contains(e.target) && 
+                        !toggle.contains(e.target) && 
+                        sidebar.classList.contains('open')) {
+                        sidebar.classList.remove('open');
+                        mainContent.classList.remove('shifted');
+                    }
+                });
+
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const page = item.dataset.page;
+                        this.switchPage(page);
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        item.classList.add('active');
+                    });
+                });
+            }
+
+            switchPage(page) {
+                document.querySelectorAll('.content-area').forEach(area => {
+                    area.classList.remove('active');
+                });
+                
+                document.getElementById(`${page}-page`).classList.add('active');
+                this.currentPage = page;
+                
+                if (page === 'clock') {
+                    this.updateClocks();
+                } else if (page === 'crypto') {
+                    if (!this.cryptoPrices.length) {
+                        this.loadCryptoPrices();
+                    }
+                }
+            }
+
+            renderCurrentPage() {
+                if (this.currentPage === 'tasks') {
+                    this.renderTasks();
+                } else if (this.currentPage === 'recipes') {
+                    this.renderRecipes();
+                } else if (this.currentPage === 'quotes') {
+                    this.renderQuotes();
+                } else if (this.currentPage === 'contacts') {
+                    this.renderContacts();
+                } else if (this.currentPage === 'crypto') {
+                    this.renderCrypto();
+                } else if (this.currentPage === 'ai-prompts') {
+                    this.renderPrompts();
+                } else if (this.currentPage === 'projects') {
+                    this.renderProjects();
+                } else if (this.currentPage === 'notes') {
+                    this.renderNotes();
+                }
+            }
+
+            // Task Management with Sub-tasks
+            initializeTasks() {
+                const taskInput = document.getElementById('taskInput');
+                const addBtn = document.getElementById('addBtn');
+                const categoryTabs = document.getElementById('categoryTabs');
+                const clearCompletedBtn = document.getElementById('clearCompleted');
+
+                addBtn.addEventListener('click', () => this.addTask());
+                taskInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addTask();
+                });
+                
+                categoryTabs.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('tab')) {
+                        this.setCategory(e.target.dataset.category);
+                    }
+                });
+
+                document.querySelector('.filter-controls').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('filter-btn')) {
+                        this.setFilter(e.target.dataset.filter);
+                    }
+                });
+
+                clearCompletedBtn.addEventListener('click', () => this.clearCompleted());
+                
+                this.renderTasks();
+                this.updateCategoryTabs();
+            }
+
+            addTask() {
+                const taskInput = document.getElementById('taskInput');
+                const categorySelect = document.getElementById('categorySelect');
+                const text = taskInput.value.trim();
+                const category = categorySelect.value;
+                
+                if (!text) return;
+
+                const task = {
+                    id: Date.now(),
+                    text,
+                    category,
+                    completed: false,
+                    subtasks: [],
+                    createdAt: new Date().toISOString()
+                };
+                
+                this.tasks.push(task);
+                taskInput.value = '';
+                this.saveData('tasks', this.tasks);
+                this.renderTasks();
+                this.updateCategoryTabs();
+            }
+
+            addSubtask(taskId, subtaskText) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task && subtaskText.trim()) {
+                    const subtask = {
+                        id: Date.now(),
+                        text: subtaskText.trim(),
+                        completed: false
+                    };
+                    task.subtasks.push(subtask);
+                    this.saveData('tasks', this.tasks);
+                    this.renderTasks();
+                }
+            }
+
+            toggleSubtask(taskId, subtaskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) {
+                    const subtask = task.subtasks.find(s => s.id === subtaskId);
+                    if (subtask) {
+                        subtask.completed = !subtask.completed;
+                        this.saveData('tasks', this.tasks);
+                        this.renderTasks();
+                    }
+                }
+            }
+
+            deleteSubtask(taskId, subtaskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+                    this.saveData('tasks', this.tasks);
+                    this.renderTasks();
+                }
+            }
+
+            toggleTask(id) {
+                const task = this.tasks.find(t => t.id === id);
+                if (task) {
+                    task.completed = !task.completed;
+                    this.saveData('tasks', this.tasks);
+                    this.renderTasks();
+                }
+            }
+
+            deleteTask(id) {
+                this.tasks = this.tasks.filter(t => t.id !== id);
+                this.saveData('tasks', this.tasks);
+                this.renderTasks();
+                this.updateCategoryTabs();
+            }
+
+            setCategory(category) {
+                this.currentCategory = category;
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.category === category);
+                });
+                this.renderTasks();
+            }
+
+            setFilter(filter) {
+                this.currentFilter = filter;
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.filter === filter);
+                });
+                this.renderTasks();
+            }
+
+            clearCompleted() {
+                this.tasks = this.tasks.filter(task => !task.completed);
+                this.saveData('tasks', this.tasks);
+                this.renderTasks();
+                this.updateCategoryTabs();
+            }
+
+            getFilteredTasks() {
+                let filtered = this.tasks;
+
+                if (this.currentCategory !== 'all') {
+                    filtered = filtered.filter(task => task.category === this.currentCategory);
+                }
+
+                if (this.currentFilter === 'pending') {
+                    filtered = filtered.filter(task => !task.completed);
+                } else if (this.currentFilter === 'completed') {
+                    filtered = filtered.filter(task => task.completed);
+                }
+
+                return filtered;
+            }
+
+            updateStats() {
+                const total = this.tasks.length;
+                const completed = this.tasks.filter(task => task.completed).length;
+                const remaining = total - completed;
+                const progress = total > 0 ? (completed / total) * 100 : 0;
+
+                document.getElementById('totalTasks').textContent = total;
+                document.getElementById('completedTasks').textContent = completed;
+                document.getElementById('remainingTasks').textContent = remaining;
+                document.getElementById('progressFill').style.width = `${progress}%`;
+            }
+
+            updateCategoryTabs() {
+                const categories = [...new Set(this.tasks.map(task => task.category))];
+                const categoryTabs = document.getElementById('categoryTabs');
+                const existingTabs = categoryTabs.querySelectorAll('.tab:not([data-category="all"])');
+                
+                existingTabs.forEach(tab => {
+                    if (!categories.includes(tab.dataset.category)) {
+                        tab.remove();
+                    }
+                });
+
+                categories.forEach(category => {
+                    if (!categoryTabs.querySelector(`[data-category="${category}"]`)) {
+                        const tab = document.createElement('button');
+                        tab.className = 'tab';
+                        tab.dataset.category = category;
+                        tab.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                        categoryTabs.appendChild(tab);
+                    }
+                });
+            }
+
+            renderTasks() {
+                const filteredTasks = this.getFilteredTasks();
+                const tasksContainer = document.getElementById('tasksContainer');
+                const emptyState = document.getElementById('emptyState');
+                
+                if (filteredTasks.length === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                }
+
+                const tasksHTML = filteredTasks.map(task => this.createTaskHTML(task)).join('');
+                tasksContainer.innerHTML = tasksHTML + emptyState.outerHTML;
+
+                // Bind events for tasks
+                filteredTasks.forEach(task => {
+                    const taskEl = tasksContainer.querySelector(`[data-task-id="${task.id}"]`);
+                    if (taskEl) {
+                        taskEl.querySelector('.task-checkbox').addEventListener('click', () => this.toggleTask(task.id));
+                        taskEl.querySelector('.delete-btn')?.addEventListener('click', () => this.deleteTask(task.id));
+                        taskEl.querySelector('.add-subtask-btn')?.addEventListener('click', () => this.toggleSubtaskForm(task.id));
+                        
+                        const subtaskForm = taskEl.querySelector('.add-subtask-form');
+                        if (subtaskForm) {
+                            const input = subtaskForm.querySelector('.subtask-input');
+                            const addBtn = subtaskForm.querySelector('.subtask-add-btn');
+                            
+                            addBtn.addEventListener('click', () => {
+                                this.addSubtask(task.id, input.value);
+                                input.value = '';
+                            });
+                            
+                            input.addEventListener('keypress', (e) => {
+                                if (e.key === 'Enter') {
+                                    this.addSubtask(task.id, input.value);
+                                    input.value = '';
+                                }
+                            });
+                        }
+
+                        // Bind subtask events
+                        task.subtasks.forEach(subtask => {
+                            const subtaskEl = taskEl.querySelector(`[data-subtask-id="${subtask.id}"]`);
+                            if (subtaskEl) {
+                                subtaskEl.querySelector('.subtask-checkbox').addEventListener('click', () => this.toggleSubtask(task.id, subtask.id));
+                                subtaskEl.querySelector('.delete-subtask-btn')?.addEventListener('click', () => this.deleteSubtask(task.id, subtask.id));
+                            }
+                        });
+                    }
+                });
+
+                this.updateStats();
+            }
+
+            createTaskHTML(task) {
+                const subtasksVisible = this.showingSubtasks[task.id] || false;
+                const subtasksHTML = task.subtasks.map(subtask => `
+                    <div class="subtask-item" data-subtask-id="${subtask.id}">
+                        <div class="subtask-checkbox ${subtask.completed ? 'checked' : ''}">
+                            ${subtask.completed ? '✓' : ''}
+                        </div>
+                        <div class="subtask-text ${subtask.completed ? 'completed' : ''}">${subtask.text}</div>
+                        <button class="action-btn delete-subtask-btn" title="Delete Subtask" style="width: 25px; height: 25px; font-size: 12px;">🗑️</button>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+                        <div class="task-main">
+                            <div class="task-checkbox ${task.completed ? 'checked' : ''}">
+                                ${task.completed ? '✓' : ''}
+                            </div>
+                            <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                            <div class="task-category">${task.category}</div>
+                            <div class="task-actions">
+                                <button class="action-btn add-subtask-btn" title="Add Subtask">➕</button>
+                                <button class="action-btn delete-btn" title="Delete">🗑️</button>
+                            </div>
+                        </div>
+                        ${task.subtasks.length > 0 || subtasksVisible ? `
+                            <div class="subtasks">
+                                ${subtasksHTML}
+                                <div class="add-subtask-form" style="display: ${subtasksVisible ? 'flex' : 'none'};">
+                                    <input type="text" class="subtask-input" placeholder="Add a subtask...">
+                                    <button class="subtask-add-btn">Add</button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            toggleSubtaskForm(taskId) {
+                this.showingSubtasks[taskId] = !this.showingSubtasks[taskId];
+                this.renderTasks();
+            }
+
+            // Clock & Timer Management
+            initializeClock() {
+                // Timer controls
+                document.getElementById('startTimer').addEventListener('click', () => this.startTimer());
+                document.getElementById('pauseTimer').addEventListener('click', () => this.pauseTimer());
+                document.getElementById('resetTimer').addEventListener('click', () => this.resetTimer());
+                
+                // Stopwatch controls
+                document.getElementById('startStopwatch').addEventListener('click', () => this.startStopwatch());
+                document.getElementById('pauseStopwatch').addEventListener('click', () => this.pauseStopwatch());
+                document.getElementById('resetStopwatch').addEventListener('click', () => this.resetStopwatch());
+                document.getElementById('lapStopwatch').addEventListener('click', () => this.lapStopwatch());
+
+                this.updateClocks();
+                setInterval(() => this.updateClocks(), 1000);
+            }
+
+            updateClocks() {
+                const now = new Date();
+                
+                // Current time
+                document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+                document.getElementById('currentDate').textContent = now.toLocaleDateString();
+                
+                // Melbourne time
+                const melbourneTime = new Date(now.toLocaleString("en-US", {timeZone: "Australia/Melbourne"}));
+                document.getElementById('melbourneTime').textContent = melbourneTime.toLocaleTimeString();
+                document.getElementById('melbourneDate').textContent = melbourneTime.toLocaleDateString();
+            }
+
+            startTimer() {
+                if (this.timerTime === 0) {
+                    const minutes = parseInt(document.getElementById('timerMinutes').value) || 0;
+                    this.timerTime = minutes * 60;
+                }
+                
+                if (this.timerTime > 0 && !this.timerRunning) {
+                    this.timerRunning = true;
+                    this.timer = setInterval(() => {
+                        this.timerTime--;
+                        this.updateTimerDisplay();
+                        
+                        if (this.timerTime <= 0) {
+                            this.pauseTimer();
+                            alert('Timer finished!');
+                        }
+                    }, 1000);
+                }
+            }
+
+            pauseTimer() {
+                this.timerRunning = false;
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+            }
+
+            resetTimer() {
+                this.pauseTimer();
+                this.timerTime = 0;
+                this.updateTimerDisplay();
+            }
+
+            updateTimerDisplay() {
+                const hours = Math.floor(this.timerTime / 3600);
+                const minutes = Math.floor((this.timerTime % 3600) / 60);
+                const seconds = this.timerTime % 60;
+                
+                document.getElementById('timerDisplay').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            startStopwatch() {
+                if (!this.stopwatchRunning) {
+                    this.stopwatchRunning = true;
+                    this.stopwatch = setInterval(() => {
+                        this.stopwatchTime++;
+                        this.updateStopwatchDisplay();
+                    }, 1000);
+                }
+            }
+
+            pauseStopwatch() {
+                this.stopwatchRunning = false;
+                if (this.stopwatch) {
+                    clearInterval(this.stopwatch);
+                    this.stopwatch = null;
+                }
+            }
+
+            resetStopwatch() {
+                this.pauseStopwatch();
+                this.stopwatchTime = 0;
+                this.lapTimes = [];
+                this.updateStopwatchDisplay();
+                document.getElementById('lapTimes').innerHTML = '';
+            }
+
+            lapStopwatch() {
+                if (this.stopwatchRunning) {
+                    this.lapTimes.push(this.stopwatchTime);
+                    const lapTime = this.formatTime(this.stopwatchTime);
+                    const lapDiv = document.createElement('div');
+                    lapDiv.style.cssText = 'padding: 5px; color: rgba(255,255,255,0.8); font-size: 0.9rem;';
+                    lapDiv.textContent = `Lap ${this.lapTimes.length}: ${lapTime}`;
+                    document.getElementById('lapTimes').appendChild(lapDiv);
+                }
+            }
+
+            updateStopwatchDisplay() {
+                document.getElementById('stopwatchDisplay').textContent = this.formatTime(this.stopwatchTime);
+            }
+
+            formatTime(totalSeconds) {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            // Recipe Management
+            initializeRecipes() {
+                document.getElementById('addRecipe').addEventListener('click', () => {
+                    this.addRecipe();
+                });
+            }
+
+            addRecipe() {
+                const name = document.getElementById('recipeName').value.trim();
+                const cuisine = document.getElementById('cuisineType').value;
+                const cookingTime = document.getElementById('cookingTime').value;
+                const servings = document.getElementById('servings').value;
+                const ingredients = document.getElementById('recipeIngredients').value.trim();
+                const instructions = document.getElementById('recipeInstructions').value.trim();
+                
+                if (!name || !ingredients || !instructions) return;
+
+                const recipe = {
+                    id: Date.now(),
+                    name,
+                    cuisine,
+                    cookingTime: parseInt(cookingTime) || 0,
+                    servings: parseInt(servings) || 1,
+                    ingredients: ingredients.split('\n').filter(i => i.trim()),
+                    instructions: instructions.split('\n').filter(i => i.trim()),
+                    createdAt: new Date().toISOString()
+                };
+
+                this.recipes.unshift(recipe);
+                this.saveData('recipes', this.recipes);
+                
+                // Clear form
+                document.getElementById('recipeName').value = '';
+                document.getElementById('cookingTime').value = '';
+                document.getElementById('servings').value = '';
+                document.getElementById('recipeIngredients').value = '';
+                document.getElementById('recipeInstructions').value = '';
+                
+                this.renderRecipes();
+            }
+
+            deleteRecipe(id) {
+                this.recipes = this.recipes.filter(recipe => recipe.id !== id);
+                this.saveData('recipes', this.recipes);
+                this.renderRecipes();
+            }
+
+            renderRecipes() {
+                const grid = document.getElementById('recipeGrid');
+                
+                if (this.recipes.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">🍽️</div>
+                            <h3>No recipes yet!</h3>
+                            <p>Add your first recipe above.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = this.recipes.map(recipe => `
+                    <div class="recipe-card">
+                        <div class="recipe-title">${recipe.name}</div>
+                        <div class="recipe-meta">
+                            ${recipe.cuisine} • ${recipe.cookingTime} min • ${recipe.servings} servings
+                        </div>
+                        <div class="ingredients">
+                            <h4>Ingredients:</h4>
+                            <ul>
+                                ${recipe.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="instructions">
+                            <h4>Instructions:</h4>
+                            <ol>
+                                ${recipe.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                            </ol>
+                        </div>
+                        <div class="task-actions" style="margin-top: 15px; justify-content: center;">
+                            <button class="action-btn delete-btn" onclick="app.deleteRecipe(${recipe.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Quotes Management
+            initializeQuotes() {
+                document.getElementById('addQuote').addEventListener('click', () => {
+                    this.addQuote();
+                });
+            }
+
+            addQuote() {
+                const text = document.getElementById('quoteText').value.trim();
+                const author = document.getElementById('quoteAuthor').value.trim();
+                const category = document.getElementById('quoteCategory').value;
+                
+                if (!text || !author) return;
+
+                const quote = {
+                    id: Date.now(),
+                    text,
+                    author,
+                    category,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.quotes.unshift(quote);
+                this.saveData('quotes', this.quotes);
+                
+                // Clear form
+                document.getElementById('quoteText').value = '';
+                document.getElementById('quoteAuthor').value = '';
+                
+                this.renderQuotes();
+            }
+
+            deleteQuote(id) {
+                this.quotes = this.quotes.filter(quote => quote.id !== id);
+                this.saveData('quotes', this.quotes);
+                this.renderQuotes();
+            }
+
+            renderQuotes() {
+                const grid = document.getElementById('quotesGrid');
+                
+                if (this.quotes.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">💭</div>
+                            <h3>No quotes yet!</h3>
+                            <p>Add your first inspirational quote above.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = this.quotes.map(quote => `
+                    <div class="quote-card">
+                        <div class="quote-text">"${quote.text}"</div>
+                        <div class="quote-author">— ${quote.author}</div>
+                        <div class="task-category" style="margin: 15px 0 10px 0;">${quote.category}</div>
+                        <div class="task-actions" style="justify-content: center;">
+                            <button class="action-btn delete-btn" onclick="app.deleteQuote(${quote.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Contacts Management
+            initializeContacts() {
+                document.getElementById('addContact').addEventListener('click', () => {
+                    this.addContact();
+                });
+            }
+
+            addContact() {
+                const name = document.getElementById('contactName').value.trim();
+                const email = document.getElementById('contactEmail').value.trim();
+                const phone = document.getElementById('contactPhone').value.trim();
+                const company = document.getElementById('contactCompany').value.trim();
+                const category = document.getElementById('contactCategory').value;
+                const notes = document.getElementById('contactNotes').value.trim();
+                
+                if (!name) return;
+
+                const contact = {
+                    id: Date.now(),
+                    name,
+                    email,
+                    phone,
+                    company,
+                    category,
+                    notes,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.contacts.unshift(contact);
+                this.saveData('contacts', this.contacts);
+                
+                // Clear form
+                document.getElementById('contactName').value = '';
+                document.getElementById('contactEmail').value = '';
+                document.getElementById('contactPhone').value = '';
+                document.getElementById('contactCompany').value = '';
+                document.getElementById('contactNotes').value = '';
+                
+                this.renderContacts();
+            }
+
+            deleteContact(id) {
+                this.contacts = this.contacts.filter(contact => contact.id !== id);
+                this.saveData('contacts', this.contacts);
+                this.renderContacts();
+            }
+
+            renderContacts() {
+                const grid = document.getElementById('contactsGrid');
+                
+                if (this.contacts.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">📇</div>
+                            <h3>No contacts yet!</h3>
+                            <p>Add your first contact above.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = this.contacts.map(contact => `
+                    <div class="contact-card">
+                        <div class="contact-name">${contact.name}</div>
+                        <div class="contact-info">
+                            ${contact.email ? `📧 ${contact.email}<br>` : ''}
+                            ${contact.phone ? `📱 ${contact.phone}<br>` : ''}
+                            ${contact.company ? `🏢 ${contact.company}<br>` : ''}
+                        </div>
+                        <div class="task-category" style="margin: 10px 0;">${contact.category}</div>
+                        ${contact.notes ? `<div class="contact-notes" style="margin: 10px 0; font-size: 0.9rem; color: rgba(255,255,255,0.8);">${contact.notes}</div>` : ''}
+                        <div class="task-actions" style="justify-content: center; margin-top: 15px;">
+                            ${contact.email ? `<a href="mailto:${contact.email}" class="action-btn" style="background: rgba(255,255,255,0.15); text-decoration: none;" title="Email">📧</a>` : ''}
+                            ${contact.phone ? `<a href="tel:${contact.phone}" class="action-btn" style="background: rgba(255,255,255,0.15); text-decoration: none;" title="Call">📱</a>` : ''}
+                            <button class="action-btn delete-btn" onclick="app.deleteContact(${contact.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Crypto Management
+            initializeCrypto() {
+                document.getElementById('refreshCrypto').addEventListener('click', () => {
+                    this.loadCryptoPrices();
+                });
+            }
+
+            async loadCryptoPrices() {
+                const loadingEl = document.getElementById('cryptoLoading');
+                const gridEl = document.getElementById('cryptoGrid');
+                
+                loadingEl.style.display = 'block';
+                gridEl.style.display = 'none';
+                
+                try {
+                    // Using CoinGecko free API
+                    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,cardano,polkadot,chainlink,litecoin,stellar,dogecoin,solana,polygon&vs_currencies=usd&include_24hr_change=true&include_market_cap=true');
+                    
+                    if (!response.ok) throw new Error('Failed to fetch crypto prices');
+                    
+                    const data = await response.json();
+                    
+                    const cryptoData = [
+                        { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', icon: '₿' },
+                        { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', icon: 'Ξ' },
+                        { id: 'cardano', name: 'Cardano', symbol: 'ADA', icon: '₳' },
+                        { id: 'polkadot', name: 'Polkadot', symbol: 'DOT', icon: '●' },
+                        { id: 'chainlink', name: 'Chainlink', symbol: 'LINK', icon: '🔗' },
+                        { id: 'litecoin', name: 'Litecoin', symbol: 'LTC', icon: 'Ł' },
+                        { id: 'stellar', name: 'Stellar', symbol: 'XLM', icon: '*' },
+                        { id: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE', icon: '🐕' },
+                        { id: 'solana', name: 'Solana', symbol: 'SOL', icon: '◎' },
+                        { id: 'polygon', name: 'Polygon', symbol: 'MATIC', icon: '♦' }
+                    ];
+                    
+                    this.cryptoPrices = cryptoData.map(crypto => ({
+                        ...crypto,
+                        price: data[crypto.id]?.usd || 0,
+                        change: data[crypto.id]?.usd_24h_change || 0,
+                        marketCap: data[crypto.id]?.usd_market_cap || 0
+                    }));
+                    
+                    this.lastCryptoUpdate = Date.now();
+                    this.renderCrypto();
+                    this.showToast('Crypto prices updated successfully!');
+                    
+                } catch (error) {
+                    console.error('Error loading crypto prices:', error);
+                    this.showToast('Failed to load crypto prices. Please try again.', 'error');
+                } finally {
+                    loadingEl.style.display = 'none';
+                    gridEl.style.display = 'grid';
+                }
+            }
+
+            renderCrypto() {
+                const grid = document.getElementById('cryptoGrid');
+                
+                if (this.cryptoPrices.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">₿</div>
+                            <h3>Loading crypto prices...</h3>
+                            <p>Click refresh to load latest prices.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const lastUpdateText = this.lastCryptoUpdate ? 
+                    `Last updated: ${new Date(this.lastCryptoUpdate).toLocaleTimeString()}` : '';
+
+                grid.innerHTML = this.cryptoPrices.map(crypto => `
+                    <div class="crypto-card">
+                        <div class="crypto-name">${crypto.icon} ${crypto.name}</div>
+                        <div class="crypto-symbol">${crypto.symbol}</div>
+                        <div class="crypto-price">$${crypto.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: crypto.price < 1 ? 6 : 2})}</div>
+                        <div class="crypto-change ${crypto.change >= 0 ? 'positive' : 'negative'}">
+                            ${crypto.change >= 0 ? '↗' : '↘'} ${crypto.change.toFixed(2)}%
+                        </div>
+                        ${crypto.marketCap > 0 ? `<div style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 10px;">
+                            Market Cap: $${(crypto.marketCap / 1e9).toFixed(1)}B
+                        </div>` : ''}
+                    </div>
+                `).join('');
+                
+                if (lastUpdateText) {
+                    grid.insertAdjacentHTML('beforebegin', `
+                        <div style="text-align: center; margin-bottom: 15px; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                            ${lastUpdateText}
+                        </div>
+                    `);
+                }
+            }
+
+            // AI Prompts Management
+            initializePrompts() {
+                document.getElementById('addPrompt').addEventListener('click', () => {
+                    if (this.editingPrompt) {
+                        this.updatePrompt();
+                    } else {
+                        this.addPrompt();
+                    }
+                });
+
+                document.getElementById('promptSearch').addEventListener('input', (e) => {
+                    this.filterPrompts();
+                });
+
+                document.getElementById('promptFilter').addEventListener('change', (e) => {
+                    this.currentPromptFilter = e.target.value;
+                    this.filterPrompts();
+                });
+            }
+
+            addPrompt() {
+                if (this.editingPrompt) {
+                    this.updatePrompt();
+                    return;
+                }
+
+                const title = document.getElementById('promptTitle').value.trim();
+                const category = document.getElementById('promptCategory').value;
+                const text = document.getElementById('promptText').value.trim();
+                const description = document.getElementById('promptDescription').value.trim();
+                
+                if (!title || !text) {
+                    this.showToast('Please fill in title and prompt text.', 'error');
+                    return;
+                }
+
+                const prompt = {
+                    id: Date.now(),
+                    title,
+                    category,
+                    text,
+                    description,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.prompts.unshift(prompt);
+                this.saveData('prompts', this.prompts);
+                
+                // Clear form
+                this.clearPromptForm();
+                
+                this.renderPrompts();
+                this.showToast('Prompt added successfully!');
+            }
+
+            clearPromptForm() {
+                document.getElementById('promptTitle').value = '';
+                document.getElementById('promptText').value = '';
+                document.getElementById('promptDescription').value = '';
+                this.editingPrompt = null;
+                document.getElementById('addPrompt').textContent = 'Add Prompt';
+            }
+
+            editPrompt(id) {
+                const prompt = this.prompts.find(p => p.id === id);
+                if (!prompt) return;
+
+                document.getElementById('promptTitle').value = prompt.title;
+                document.getElementById('promptCategory').value = prompt.category;
+                document.getElementById('promptText').value = prompt.text;
+                document.getElementById('promptDescription').value = prompt.description || '';
+                
+                this.editingPrompt = id;
+                document.getElementById('addPrompt').textContent = 'Update Prompt';
+                
+                // Scroll to form
+                document.querySelector('#ai-prompts-page .content-card').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            updatePrompt() {
+                if (!this.editingPrompt) return;
+
+                const title = document.getElementById('promptTitle').value.trim();
+                const category = document.getElementById('promptCategory').value;
+                const text = document.getElementById('promptText').value.trim();
+                const description = document.getElementById('promptDescription').value.trim();
+                
+                if (!title || !text) {
+                    this.showToast('Please fill in title and prompt text.', 'error');
+                    return;
+                }
+
+                const promptIndex = this.prompts.findIndex(p => p.id === this.editingPrompt);
+                if (promptIndex !== -1) {
+                    this.prompts[promptIndex] = {
+                        ...this.prompts[promptIndex],
+                        title,
+                        category,
+                        text,
+                        description,
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    this.saveData('prompts', this.prompts);
+                    this.renderPrompts();
+                    this.showToast('Prompt updated successfully!');
+                    
+                    // Reset form
+                    this.clearPromptForm();
+                }
+            }
+
+            deletePrompt(id) {
+                if (confirm('Are you sure you want to delete this prompt?')) {
+                    this.prompts = this.prompts.filter(prompt => prompt.id !== id);
+                    this.saveData('prompts', this.prompts);
+                    this.renderPrompts();
+                    this.showToast('Prompt deleted successfully!');
+                }
+            }
+
+            copyPromptToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showToast('Prompt copied to clipboard!');
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    this.showToast('Prompt copied to clipboard!');
+                });
+            }
+
+            filterPrompts() {
+                this.renderPrompts();
+            }
+
+            getFilteredPrompts() {
+                let filtered = this.prompts;
+                
+                // Filter by category
+                if (this.currentPromptFilter !== 'all') {
+                    filtered = filtered.filter(prompt => prompt.category === this.currentPromptFilter);
+                }
+                
+                // Filter by search
+                const searchTerm = document.getElementById('promptSearch').value.toLowerCase();
+                if (searchTerm) {
+                    filtered = filtered.filter(prompt => 
+                        prompt.title.toLowerCase().includes(searchTerm) ||
+                        prompt.text.toLowerCase().includes(searchTerm) ||
+                        prompt.description.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                return filtered;
+            }
+
+            renderPrompts() {
+                const filteredPrompts = this.getFilteredPrompts();
+                const grid = document.getElementById('promptsGrid');
+                
+                if (filteredPrompts.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">🤖</div>
+                            <h3>No prompts found!</h3>
+                            <p>${this.prompts.length === 0 ? 'Add your first AI prompt above.' : 'Try adjusting your search or filter.'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = filteredPrompts.map(prompt => `
+                    <div class="prompt-card">
+                        <div class="prompt-title">${prompt.title}</div>
+                        <div class="task-category" style="margin-bottom: 15px;">${prompt.category}</div>
+                        ${prompt.description ? `<div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 15px; font-style: italic;">${prompt.description}</div>` : ''}
+                        <div class="prompt-text">${prompt.text}</div>
+                        <div class="prompt-actions">
+                            <button class="action-btn copy-btn" onclick="app.copyPromptToClipboard(\`${prompt.text.replace(/`/g, '\\`')}\`)" title="Copy to Clipboard">📋</button>
+                            <button class="action-btn edit-btn" onclick="app.editPrompt(${prompt.id})" title="Edit">✏️</button>
+                            <button class="action-btn delete-btn" onclick="app.deletePrompt(${prompt.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Projects Management
+            initializeProjects() {
+                document.getElementById('addProject').addEventListener('click', () => {
+                    if (this.editingProject) {
+                        this.updateProject();
+                    } else {
+                        this.addProject();
+                    }
+                });
+
+                document.getElementById('projectStatusFilter').addEventListener('change', (e) => {
+                    this.currentProjectStatusFilter = e.target.value;
+                    this.renderProjects();
+                });
+
+                document.getElementById('projectPriorityFilter').addEventListener('change', (e) => {
+                    this.currentProjectPriorityFilter = e.target.value;
+                    this.renderProjects();
+                });
+
+                // Update progress slider display
+                document.getElementById('projectProgress').addEventListener('input', (e) => {
+                    document.getElementById('progressValue').textContent = e.target.value + '%';
+                });
+            }
+
+            addProject() {
+                const name = document.getElementById('projectName').value.trim();
+                const category = document.getElementById('projectCategory').value;
+                const status = document.getElementById('projectStatus').value;
+                const priority = document.getElementById('projectPriority').value;
+                const dueDate = document.getElementById('projectDueDate').value;
+                const progress = parseInt(document.getElementById('projectProgress').value);
+                const description = document.getElementById('projectDescription').value.trim();
+                
+                if (!name) {
+                    this.showToast('Please enter a project name.', 'error');
+                    return;
+                }
+
+                const project = {
+                    id: Date.now(),
+                    name,
+                    category,
+                    status,
+                    priority,
+                    dueDate: dueDate || null,
+                    progress,
+                    description,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.projects.unshift(project);
+                this.saveData('projects', this.projects);
+                
+                // Clear form
+                this.clearProjectForm();
+                
+                this.renderProjects();
+                this.showToast('Project added successfully!');
+            }
+
+            editProject(id) {
+                const project = this.projects.find(p => p.id === id);
+                if (!project) return;
+
+                document.getElementById('projectName').value = project.name;
+                document.getElementById('projectCategory').value = project.category;
+                document.getElementById('projectStatus').value = project.status;
+                document.getElementById('projectPriority').value = project.priority;
+                document.getElementById('projectDueDate').value = project.dueDate || '';
+                document.getElementById('projectProgress').value = project.progress;
+                document.getElementById('progressValue').textContent = project.progress + '%';
+                document.getElementById('projectDescription').value = project.description || '';
+                
+                this.editingProject = id;
+                document.getElementById('addProject').textContent = 'Update Project';
+                
+                // Scroll to form
+                document.querySelector('#projects-page .content-card').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            updateProject() {
+                if (!this.editingProject) return;
+
+                const name = document.getElementById('projectName').value.trim();
+                const category = document.getElementById('projectCategory').value;
+                const status = document.getElementById('projectStatus').value;
+                const priority = document.getElementById('projectPriority').value;
+                const dueDate = document.getElementById('projectDueDate').value;
+                const progress = parseInt(document.getElementById('projectProgress').value);
+                const description = document.getElementById('projectDescription').value.trim();
+                
+                if (!name) {
+                    this.showToast('Please enter a project name.', 'error');
+                    return;
+                }
+
+                const projectIndex = this.projects.findIndex(p => p.id === this.editingProject);
+                if (projectIndex !== -1) {
+                    this.projects[projectIndex] = {
+                        ...this.projects[projectIndex],
+                        name,
+                        category,
+                        status,
+                        priority,
+                        dueDate: dueDate || null,
+                        progress,
+                        description,
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    this.saveData('projects', this.projects);
+                    this.renderProjects();
+                    this.showToast('Project updated successfully!');
+                    
+                    // Reset form
+                    this.editingProject = null;
+                    document.getElementById('addProject').textContent = 'Add Project';
+                    this.clearProjectForm();
+                }
+            }
+
+            deleteProject(id) {
+                if (confirm('Are you sure you want to delete this project?')) {
+                    this.projects = this.projects.filter(project => project.id !== id);
+                    this.saveData('projects', this.projects);
+                    this.renderProjects();
+                    this.showToast('Project deleted successfully!');
+                }
+            }
+
+            clearProjectForm() {
+                document.getElementById('projectName').value = '';
+                document.getElementById('projectCategory').value = 'web-dev';
+                document.getElementById('projectStatus').value = 'planning';
+                document.getElementById('projectPriority').value = 'medium';
+                document.getElementById('projectDueDate').value = '';
+                document.getElementById('projectProgress').value = '0';
+                document.getElementById('progressValue').textContent = '0%';
+                document.getElementById('projectDescription').value = '';
+            }
+
+            getFilteredProjects() {
+                let filtered = this.projects;
+                
+                // Filter by status
+                if (this.currentProjectStatusFilter !== 'all') {
+                    filtered = filtered.filter(project => project.status === this.currentProjectStatusFilter);
+                }
+                
+                // Filter by priority
+                if (this.currentProjectPriorityFilter !== 'all') {
+                    filtered = filtered.filter(project => project.priority === this.currentProjectPriorityFilter);
+                }
+                
+                return filtered;
+            }
+
+            formatProjectDueDate(dueDate) {
+                if (!dueDate) return '';
+                
+                const due = new Date(dueDate);
+                const now = new Date();
+                const diffTime = due.getTime() - now.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                let className = '';
+                let prefix = 'Due: ';
+                
+                if (diffDays < 0) {
+                    className = 'overdue';
+                    prefix = 'Overdue: ';
+                } else if (diffDays <= 7) {
+                    className = 'due-soon';
+                    prefix = 'Due soon: ';
+                }
+                
+                return `<div class="project-due-date ${className}">${prefix}${due.toLocaleDateString()}</div>`;
+            }
+
+            renderProjects() {
+                const filteredProjects = this.getFilteredProjects();
+                const grid = document.getElementById('projectsGrid');
+                
+                if (filteredProjects.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">📋</div>
+                            <h3>No projects found!</h3>
+                            <p>${this.projects.length === 0 ? 'Add your first project above.' : 'Try adjusting your filters.'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = filteredProjects.map(project => `
+                    <div class="project-card">
+                        <div class="project-name">${project.name}</div>
+                        <div class="project-meta">
+                            <div class="project-status ${project.status}">${project.status.replace('-', ' ')}</div>
+                            <div class="project-priority ${project.priority}">${project.priority}</div>
+                        </div>
+                        <div class="task-category" style="margin-bottom: 15px;">${project.category.replace('-', ' ')}</div>
+                        ${project.description ? `<div class="project-description">${project.description}</div>` : ''}
+                        <div class="project-progress">
+                            <div class="project-progress-label">Progress: ${project.progress}%</div>
+                            <div class="project-progress-bar">
+                                <div class="project-progress-fill" style="width: ${project.progress}%"></div>
+                            </div>
+                        </div>
+                        ${this.formatProjectDueDate(project.dueDate)}
+                        <div class="project-actions">
+                            <button class="action-btn edit-btn" onclick="app.editProject(${project.id})" title="Edit">✏️</button>
+                            <button class="action-btn delete-btn" onclick="app.deleteProject(${project.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Notes Management
+            initializeNotes() {
+                document.getElementById('addNote').addEventListener('click', () => {
+                    this.addNote();
+                });
+
+                // Filter buttons
+                const notesFilterControls = document.querySelector('#notes-page .filter-controls');
+                if (notesFilterControls) {
+                    notesFilterControls.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('filter-btn')) {
+                            this.currentNotesFilter = e.target.dataset.filter;
+                            document.querySelectorAll('#notes-page .filter-btn').forEach(btn => {
+                                btn.classList.toggle('active', btn.dataset.filter === this.currentNotesFilter);
+                            });
+                            this.renderNotes();
+                        }
+                    });
+                }
+
+                this.currentNotesFilter = 'all';
+            }
+
+            addNote() {
+                const title = document.getElementById('noteTitle').value.trim();
+                const category = document.getElementById('noteCategory').value;
+                const content = document.getElementById('noteContent').value.trim();
+                
+                if (!title || !content) {
+                    this.showToast('Please enter both title and content.', 'error');
+                    return;
+                }
+
+                const note = {
+                    id: Date.now(),
+                    title,
+                    category,
+                    content,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.notes.unshift(note);
+                this.saveData('notes', this.notes);
+                
+                // Clear form
+                document.getElementById('noteTitle').value = '';
+                document.getElementById('noteContent').value = '';
+                
+                this.renderNotes();
+                this.showToast('Note saved successfully!');
+            }
+
+            addNoteFromSelection(text, title = null) {
+                const note = {
+                    id: Date.now(),
+                    title: title || 'Chat Highlight',
+                    category: 'highlights',
+                    content: text,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.notes.unshift(note);
+                this.saveData('notes', this.notes);
+                this.showToast('Text saved as note!');
+            }
+
+            deleteNote(id) {
+                if (confirm('Are you sure you want to delete this note?')) {
+                    this.notes = this.notes.filter(note => note.id !== id);
+                    this.saveData('notes', this.notes);
+                    this.renderNotes();
+                    this.showToast('Note deleted successfully!');
+                }
+            }
+
+            getFilteredNotes() {
+                if (this.currentNotesFilter === 'all') {
+                    return this.notes;
+                }
+                return this.notes.filter(note => note.category === this.currentNotesFilter);
+            }
+
+            renderNotes() {
+                const filteredNotes = this.getFilteredNotes();
+                const grid = document.getElementById('notesGrid');
+                
+                if (filteredNotes.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">📝</div>
+                            <h3>No notes yet!</h3>
+                            <p>Add your first note above or highlight text from chat messages.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = filteredNotes.map(note => `
+                    <div class="note-card">
+                        <div class="note-title">${note.title}</div>
+                        <div class="note-meta">
+                            <span class="task-category" style="display: inline-block; margin-right: 15px;">${note.category}</span>
+                            <span>${new Date(note.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div class="note-content">${note.content.length > 200 ? note.content.substring(0, 200) + '...' : note.content}</div>
+                        <div class="note-actions">
+                            <button class="action-btn delete-btn" onclick="app.deleteNote(${note.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Chat Management
+            initializeChats() {
+                // Claude Chat
+                const claudeSendBtn = document.getElementById('claudeSendBtn');
+                const claudeChatInput = document.getElementById('claudeChatInput');
+
+                claudeSendBtn.addEventListener('click', () => {
+                    this.sendClaudeMessage();
+                });
+
+                claudeChatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendClaudeMessage();
+                    }
+                });
+
+                // Gemini Chat
+                const geminiSendBtn = document.getElementById('geminiSendBtn');
+                const geminiChatInput = document.getElementById('geminiChatInput');
+
+                geminiSendBtn.addEventListener('click', () => {
+                    this.sendGeminiMessage();
+                });
+
+                geminiChatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendGeminiMessage();
+                    }
+                });
+
+                // Load existing chats
+                this.claudeChats = this.loadData('claudeChats', []);
+                this.geminiChats = this.loadData('geminiChats', []);
+            }
+
+            sendClaudeMessage() {
+                const input = document.getElementById('claudeChatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+
+                // Add user message
+                this.addMessageToChat('claude', message, 'user');
+                input.value = '';
+
+                // Simulate Claude response (since we don't have real API access)
+                setTimeout(() => {
+                    const responses = [
+                        "I understand you'd like to discuss that topic. As a simulated Claude, I can provide thoughtful responses on a wide range of subjects.",
+                        "That's an interesting question! While this is a demo version, I'm here to help with information, creative tasks, analysis, and more.",
+                        "I appreciate you sharing that with me. In a real implementation, I would provide detailed, helpful responses tailored to your specific needs.",
+                        "Thank you for your message! This simulated version demonstrates how the chat interface would work with the actual Claude API.",
+                        "I'd be happy to help with that! This demo shows the chat functionality - the real version would connect to Claude's API for authentic responses."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    this.addMessageToChat('claude', randomResponse, 'assistant');
+                }, 1000);
+            }
+
+            async sendGeminiMessage() {
+                const input = document.getElementById('geminiChatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+
+                // Add user message
+                this.addMessageToChat('gemini', message, 'user');
+                input.value = '';
+
+                // Show loading
+                const loadingId = this.addMessageToChat('gemini', 'Thinking...', 'assistant', true);
+
+                try {
+                    // Use Google Gemini API
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyANM-sfgaGhQJgH2HQrR1ZErkEUS3vRcB0`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: message
+                                }]
+                            }]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to get response from Gemini API');
+                    }
+
+                    const data = await response.json();
+                    const aiResponse = data.candidates[0]?.content?.parts[0]?.text || 'Sorry, I could not generate a response.';
+
+                    // Remove loading message and add real response
+                    this.removeMessageFromChat('gemini', loadingId);
+                    this.addMessageToChat('gemini', aiResponse, 'assistant');
+
+                } catch (error) {
+                    console.error('Gemini API Error:', error);
+                    this.removeMessageFromChat('gemini', loadingId);
+                    this.addMessageToChat('gemini', 'Sorry, I encountered an error. Please try again later.', 'assistant');
+                }
+            }
+
+            addMessageToChat(chatType, message, sender, isLoading = false) {
+                const messagesContainer = document.getElementById(chatType === 'claude' ? 'claudeChatMessages' : 'geminiChatMessages');
+                const messageId = Date.now() + Math.random();
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender} ${isLoading ? 'loading-message' : ''}`;
+                messageDiv.setAttribute('data-message-id', messageId);
+                messageDiv.innerHTML = `<p>${message}</p>`;
+                
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // Save to chat history (except loading messages)
+                if (!isLoading) {
+                    const chatHistory = chatType === 'claude' ? this.claudeChats : this.geminiChats;
+                    chatHistory.push({
+                        id: messageId,
+                        message,
+                        sender,
+                        timestamp: new Date().toISOString()
+                    });
+                    this.saveData(chatType === 'claude' ? 'claudeChats' : 'geminiChats', chatHistory);
+                }
+
+                return messageId;
+            }
+
+            removeMessageFromChat(chatType, messageId) {
+                const messagesContainer = document.getElementById(chatType === 'claude' ? 'claudeChatMessages' : 'geminiChatMessages');
+                const messageElement = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageElement) {
+                    messageElement.remove();
+                }
+            }
+
+            // Text Selection to Notes Feature
+            initializeTextSelection() {
+                let selectionTooltip = null;
+
+                document.addEventListener('mouseup', (e) => {
+                    // Remove existing tooltip
+                    if (selectionTooltip) {
+                        document.body.removeChild(selectionTooltip);
+                        selectionTooltip = null;
+                    }
+
+                    const selection = window.getSelection();
+                    const selectedText = selection.toString().trim();
+
+                    // Only show tooltip for non-empty selections in chat messages
+                    if (selectedText.length > 10 && this.isInChatArea(e.target)) {
+                        const range = selection.getRangeAt(0);
+                        const rect = range.getBoundingClientRect();
+
+                        selectionTooltip = document.createElement('div');
+                        selectionTooltip.className = 'selection-tooltip';
+                        selectionTooltip.textContent = '📝 Save as Note';
+                        selectionTooltip.style.left = rect.left + (rect.width / 2) - 60 + 'px';
+                        selectionTooltip.style.top = rect.top - 35 + 'px';
+
+                        selectionTooltip.addEventListener('click', () => {
+                            this.addNoteFromSelection(selectedText);
+                            document.body.removeChild(selectionTooltip);
+                            selectionTooltip = null;
+                            selection.removeAllRanges();
+                        });
+
+                        document.body.appendChild(selectionTooltip);
+                    }
+                });
+
+                // Remove tooltip on click outside
+                document.addEventListener('click', (e) => {
+                    if (selectionTooltip && !selectionTooltip.contains(e.target)) {
+                        document.body.removeChild(selectionTooltip);
+                        selectionTooltip = null;
+                    }
+                });
+            }
+
+            isInChatArea(element) {
+                while (element && element !== document.body) {
+                    if (element.classList && element.classList.contains('chat-messages')) {
+                        return true;
+                    }
+                    element = element.parentElement;
+                }
+                return false;
+            }
+
+            // Utility Functions
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+                toast.textContent = message;
+                
+                document.body.appendChild(toast);
+                
+                // Trigger animation
+                setTimeout(() => toast.classList.add('show'), 100);
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => document.body.removeChild(toast), 300);
+                }, 3000);
+            }
+
+            // Data Management
+            saveData(key, data) {
+                const jsonData = JSON.stringify(data);
+                document.cookie = `${key}=${encodeURIComponent(jsonData)}; path=/; max-age=${60*60*24*365}`;
+            }
+
+            loadData(key, defaultValue) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name === key) {
+                        try {
+                            return JSON.parse(decodeURIComponent(value));
+                        } catch (e) {
+                            console.error(`Error loading ${key}:`, e);
+                        }
+                    }
+                }
+                return defaultValue;
+            }
+        }
+
+        // Initialize the app
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new UltimateProductivitySuite();
+        });
+    </script>
+</body>
+</html>
